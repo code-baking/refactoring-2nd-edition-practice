@@ -1,0 +1,30 @@
+{
+  "name": "refactoring-2nd-edition-practice",
+  "version": "1.0.0",
+  "description": "리팩터링 2판 - 코드 예제 연습하기",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node src/index.js",
+    "coverage": "jest --coverage",
+    "test": "npx jest --watchAll --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-baking/refactoring-2nd-edition-practice.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/code-baking/refactoring-2nd-edition-practice/issues"
+  },
+  "homepage": "https://github.com/code-baking/refactoring-2nd-edition-practice#readme",
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/node": "^7.14.7",
+    "@babel/preset-env": "^7.14.7",
+    "@types/jest": "^26.0.24",
+    "babel-jest": "^27.0.6",
+    "jest": "^27.0.6"
+  }
+}
