@@ -5,6 +5,7 @@
 - 9장 ~ 10장 내용을 연습해보기
 - 각자 브랜치로 Pull Request 후 리뷰 받아보기
 - 다른 Pull Request를 리뷰해보기
+- Pull Request 성공하기 (조건: 리뷰 1개 필수)
 ## 📚 Install dependencies
 
 ```sh
