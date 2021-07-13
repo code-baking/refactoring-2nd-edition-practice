@@ -1,6 +1,9 @@
 /* eslint-disable no-restricted-syntax */
 import { invoices, plays } from './fixtures.js';
 
+const isMoreThen = (target) => (value) => target > value;
+const isEqual = (left) => (right) => left === right;
+
 export default function statement(invoice, plays) {
   // 전체 공연료
   let totalAmount = 0;
@@ -20,19 +23,21 @@ export default function statement(invoice, plays) {
     // e.g) { "name": "Hamlet", "type": "tragedy" }
     const play = plays[perf.playID];
 
+    const isAudienceMoreThen = isMoreThen(perf.audience);
+
     // 공연료
     let thisAmount = 0;
 
     switch (play.type) {
       case 'tragedy':
         thisAmount = 40000;
-        if (perf.audience > 30) {
+        if (isAudienceMoreThen(30)) {
           thisAmount += 1000 * (perf.audience - 30);
         }
         break;
       case 'comedy':
         thisAmount = 30000;
-        if (perf.audience > 20) {
+        if (isAudienceMoreThen(20)) {
           thisAmount += 10000 + 500 * (perf.audience - 20);
         }
         thisAmount += 300 * perf.audience;
@@ -45,7 +50,7 @@ export default function statement(invoice, plays) {
     volumeCredits += Math.max(perf.audience - 30, 0);
 
     // 희극 관객 5명마다 추가 포인트를 제공한다.
-    if (play.type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
+    if (isEqual(play.type)('comedy')) volumeCredits += Math.floor(perf.audience / 5);
 
     // 청구 내역을 출력한다
     result += ` ${play.name}: ${format(thisAmount / 100)} (${perf.audience
