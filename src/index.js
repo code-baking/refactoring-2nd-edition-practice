@@ -74,7 +74,13 @@ export default function statement(invoice, plays) {
   });
 
   for (const perf of invoice.performances) {
-    // e.g) { "name": "Hamlet", "type": "tragedy" }
+    const calculator = createPerformanceCalculator(perf);
+
+    // 포인트를 적립한다.
+    volumeCredits += calculator.volumeCreditsFor;
+  }
+
+  for (const perf of invoice.performances) {
     const play = playFor(perf);
 
     const calculator = createPerformanceCalculator(perf);
@@ -82,12 +88,17 @@ export default function statement(invoice, plays) {
     // 공연료
     const thisAmount = calculator.amountFor;
 
-    // 포인트를 적립한다.
-    volumeCredits += calculator.volumeCreditsFor;
-
     // 청구 내역을 출력한다
     result += ` ${play.name}: ${format(thisAmount / 100)} (${perf.audience
     }석)\n`;
+  }
+
+  for (const perf of invoice.performances) {
+    const calculator = createPerformanceCalculator(perf);
+
+    // 공연료
+    const thisAmount = calculator.amountFor;
+
     totalAmount += thisAmount;
   }
 
