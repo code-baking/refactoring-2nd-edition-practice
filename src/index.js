@@ -1,5 +1,62 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable no-restricted-syntax */
-import { invoices, plays } from './fixtures.js';
+import { invoices, plays } from './fixtures';
+
+function playFor(performance) {
+  return plays[performance.playID];
+}
+
+class PerformanceCalculator {
+  constructor(performance) {
+    this.play = playFor(performance);
+    this.performance = performance;
+  }
+
+  get volumeCreditsFor() {
+    return Math.max(this.performance.audience - 30, 0);
+  }
+}
+
+class TragedyCalculator extends PerformanceCalculator {
+  get amountFor() {
+    const defaultAmount = 40000;
+
+    if (this.performance.audience > 30) {
+      return defaultAmount + (1000 * (this.performance.audience - 30));
+    }
+
+    return defaultAmount;
+  }
+}
+
+class ComedyCalculator extends PerformanceCalculator {
+  get amountFor() {
+    const defaultAmount = 30000 + 300 * this.performance.audience;
+
+    if (this.performance.audience > 20) {
+      return defaultAmount + 10000 + 500 * (this.performance.audience - 20);
+    }
+
+    return defaultAmount;
+  }
+
+  get volumeCreditsFor() {
+    return super.volumeCreditsFor + Math.floor(this.performance.audience / 5);
+  }
+}
+
+function createPerformanceCalculator(perf) {
+  switch (playFor(perf).type) {
+    case 'tragedy':
+      return new TragedyCalculator(perf);
+
+    case 'comedy':
+      return new ComedyCalculator(perf);
+
+    default:
+      throw new Error();
+  }
+}
 
 export default function statement(invoice, plays) {
   // 전체 공연료
@@ -18,38 +75,19 @@ export default function statement(invoice, plays) {
 
   for (const perf of invoice.performances) {
     // e.g) { "name": "Hamlet", "type": "tragedy" }
-    const play = plays[perf.playID];
+    const play = playFor(perf);
+
+    const calculator = createPerformanceCalculator(perf);
 
     // 공연료
-    let thisAmount = 0;
-
-    switch (play.type) {
-      case 'tragedy':
-        thisAmount = 40000;
-        if (perf.audience > 30) {
-          thisAmount += 1000 * (perf.audience - 30);
-        }
-        break;
-      case 'comedy':
-        thisAmount = 30000;
-        if (perf.audience > 20) {
-          thisAmount += 10000 + 500 * (perf.audience - 20);
-        }
-        thisAmount += 300 * perf.audience;
-        break;
-      default:
-        throw new Error(`알 수 없는 장르: ${play.type}`);
-    }
+    const thisAmount = calculator.amountFor;
 
     // 포인트를 적립한다.
-    volumeCredits += Math.max(perf.audience - 30, 0);
-
-    // 희극 관객 5명마다 추가 포인트를 제공한다.
-    if (play.type === 'comedy') volumeCredits += Math.floor(perf.audience / 5);
+    volumeCredits += calculator.volumeCreditsFor;
 
     // 청구 내역을 출력한다
     result += ` ${play.name}: ${format(thisAmount / 100)} (${perf.audience
-      }석)\n`;
+    }석)\n`;
     totalAmount += thisAmount;
   }
 
