@@ -59,53 +59,41 @@ function createPerformanceCalculator(perf) {
 }
 
 export default function statement(invoice, plays) {
-  // 전체 공연료
-  let totalAmount = 0;
-
-  // 포인트
-  let volumeCredits = 0;
-
-  let result = `Statement for ${invoice.customer}\n`;
-
   const { format } = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFactionDigits: 2,
   });
 
-  for (const perf of invoice.performances) {
-    const calculator = createPerformanceCalculator(perf);
+  const volumeCredits = invoice.performances.reduce(
+    (acc, performance) => {
+      const calculator = createPerformanceCalculator(performance);
 
-    // 포인트를 적립한다.
-    volumeCredits += calculator.volumeCreditsFor;
-  }
+      return acc + calculator.volumeCreditsFor;
+    },
+    0,
+  );
 
-  for (const perf of invoice.performances) {
-    const play = playFor(perf);
+  const result = invoice.performances.reduce((acc, performance) => {
+    const play = playFor(performance);
 
-    const calculator = createPerformanceCalculator(perf);
+    const calculator = createPerformanceCalculator(performance);
 
-    // 공연료
     const thisAmount = calculator.amountFor;
 
-    // 청구 내역을 출력한다
-    result += ` ${play.name}: ${format(thisAmount / 100)} (${perf.audience
+    return `${acc} ${play.name}: ${format(thisAmount / 100)} (${performance.audience
     }석)\n`;
-  }
+  }, `Statement for ${invoice.customer}\n`);
 
-  for (const perf of invoice.performances) {
-    const calculator = createPerformanceCalculator(perf);
+  const totalAmount = invoice.performances.reduce((acc, performance) => {
+    const calculator = createPerformanceCalculator(performance);
 
-    // 공연료
     const thisAmount = calculator.amountFor;
 
-    totalAmount += thisAmount;
-  }
+    return acc + thisAmount;
+  }, 0);
 
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
-
-  return result;
+  return `${result}총액: ${format(totalAmount / 100)}\n적립 포인트: ${volumeCredits}점\n`;
 }
 
 invoices.forEach((invoice) => {
