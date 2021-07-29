@@ -59,42 +59,41 @@ function createPerformanceCalculator(perf) {
 }
 
 export default function statement(invoice, plays) {
-  // 전체 공연료
-  let totalAmount = 0;
-
-  // 포인트
-  let volumeCredits = 0;
-
-  let result = `Statement for ${invoice.customer}\n`;
-
   const { format } = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFactionDigits: 2,
   });
 
-  for (const perf of invoice.performances) {
-    // e.g) { "name": "Hamlet", "type": "tragedy" }
-    const play = playFor(perf);
+  const volumeCredits = invoice.performances.reduce(
+    (acc, performance) => {
+      const calculator = createPerformanceCalculator(performance);
 
-    const calculator = createPerformanceCalculator(perf);
+      return acc + calculator.volumeCreditsFor;
+    },
+    0,
+  );
 
-    // 공연료
+  const result = invoice.performances.reduce((acc, performance) => {
+    const play = playFor(performance);
+
+    const calculator = createPerformanceCalculator(performance);
+
     const thisAmount = calculator.amountFor;
 
-    // 포인트를 적립한다.
-    volumeCredits += calculator.volumeCreditsFor;
-
-    // 청구 내역을 출력한다
-    result += ` ${play.name}: ${format(thisAmount / 100)} (${perf.audience
+    return `${acc} ${play.name}: ${format(thisAmount / 100)} (${performance.audience
     }석)\n`;
-    totalAmount += thisAmount;
-  }
+  }, `Statement for ${invoice.customer}\n`);
 
-  result += `총액: ${format(totalAmount / 100)}\n`;
-  result += `적립 포인트: ${volumeCredits}점\n`;
+  const totalAmount = invoice.performances.reduce((acc, performance) => {
+    const calculator = createPerformanceCalculator(performance);
 
-  return result;
+    const thisAmount = calculator.amountFor;
+
+    return acc + thisAmount;
+  }, 0);
+
+  return `${result}총액: ${format(totalAmount / 100)}\n적립 포인트: ${volumeCredits}점\n`;
 }
 
 invoices.forEach((invoice) => {
